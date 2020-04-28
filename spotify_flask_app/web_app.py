@@ -58,6 +58,7 @@ def create_app():
         '''
         cur.execute(query_1)
         results = cur.fetchall()
+        conn.close()
         return jsonify(results)
 
     @app.route("/<user>/<playlist_id>")
@@ -115,5 +116,5 @@ def create_app():
             }
         ]
         return jsonify(dummy_data)     
-        
+
     return app
