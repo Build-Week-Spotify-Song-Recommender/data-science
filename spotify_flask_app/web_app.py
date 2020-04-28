@@ -115,6 +115,3 @@ def create_app():
         return jsonify(dummy_data)
 
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
