@@ -51,12 +51,12 @@ def create_app():
     def april_spotify_data():
         query_1 = '''
         SELECT *
-        FROM april_spotify
-        LIMIT 1000
+        FROM spotify_table
+        LIMIT 100
         '''
         cur.execute(query_1)
         results = cur.fetchall()
-        return jsonify(dict(results))
+        return jsonify(results)
 
     @app.route("/<user>/<playlist_id>")
     def playlist_audio_features(user=None, playlist_id=None):
@@ -70,7 +70,7 @@ def create_app():
         features = sp.audio_features(ids)
         print(type(features))
         print(len(features))
-        return jsonify(dict(features))
+        return jsonify(features)
 
     @app.route("/dummy_data")
     def dummy_data():
@@ -112,6 +112,8 @@ def create_app():
                 'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
             }
         ]
-        return jsonify(dict(dummy_data))
+        return jsonify(dummy_data)
+
+    return app
 
 
