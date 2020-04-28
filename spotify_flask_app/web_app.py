@@ -41,7 +41,7 @@ cur = conn.cursor()
 def create_app():
     app = Flask(__name__)
     db = SQLAlchemy(app)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://phmcuozt:Gq5822Z4v3ypBvLtnCsF4XjabVM3LKr9@drona.db.elephantsql.com:5432/phmcuozt'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://phmcuozt:Hl4xzpVOZxiQ9af4kH5bavoEHIx7z3hn@drona.db.elephantsql.com:5432/phmcuozt'
 
     @app.route("/")
     def index():
@@ -56,7 +56,7 @@ def create_app():
         '''
         cur.execute(query_1)
         results = cur.fetchall()
-        return jsonify(results)
+        return jsonify(dict((results))
 
     @app.route("/<user>/<playlist_id>")
     def playlist_audio_features(user=None, playlist_id=None):
@@ -70,7 +70,7 @@ def create_app():
         features = sp.audio_features(ids)
         print(type(features))
         print(len(features))
-        return jsonify(features)
+        return jsonify(dict((features))
 
     @app.route("/dummy_data")
     def dummy_data():
@@ -112,6 +112,6 @@ def create_app():
                 'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
             }
         ]
-        return jsonify(dummy_data)
+        return jsonify(dict(dummy_data))
 
 
