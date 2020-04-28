@@ -1,18 +1,30 @@
-from flask import Flask, jsonify
 import os
-# from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
-# from flask_migrate import Migrate
 import psycopg2
+import pandas as pd
+from flask import Flask, jsonify
+from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
+
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+load_dotenv()
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID,
+                                                     client_secret=CLIENT_SECRET)
+sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+# from flask_migrate import Migrate
 # from psycopg2.extras import execute_values
+
 db = SQLAlchemy()
 # migrate = Migrate()
 
-
-SPOTIFY_DB_NAME = "phmcuozt"
-SPOTIFY_DB_PW = "Gq5822Z4v3ypBvLtnCsF4XjabVM3LKr9"
-SPOTIFY_DB_HOST = "drona.db.elephantsql.com"
-SPOTIFY_DB_USER = "phmcuozt"
+SPOTIFY_DB_NAME = os.getenv("SPOTIFY_DB_NAME")
+SPOTIFY_DB_PW = os.getenv("SPOTIFY_DB_PW")
+SPOTIFY_DB_HOST = os.getenv("SPOTIFY_DB_HOST")
+SPOTIFY_DB_USER = os.getenv("SPOTIFY_DB_USER")
 
 conn = psycopg2.connect(dbname=SPOTIFY_DB_NAME, user=SPOTIFY_DB_USER,
                         password=SPOTIFY_DB_PW, host=SPOTIFY_DB_HOST)
@@ -40,13 +52,25 @@ def april_spotify_data():
     query_1 = '''
     SELECT *
     FROM april_spotify
-    LIMIT 10
+    LIMIT 1000
     '''
     cur.execute(query_1)
     results = cur.fetchall()
     return jsonify(results)
 
-# @app.route("/data")
+@app.route("/<user>/<playlist_id>")
+def playlist_audio_features(user=None, playlist_id=None):
+    playlist = sp.user_playlist(user=user, playlist_id=playlist_id)
+    songs = playlist["tracks"]["items"] 
+    
+    ids = [] 
+    for i in range(len(songs)): 
+        ids.append(songs[i]["track"]["id"]) 
+    
+    features = sp.audio_features(ids)
+    print(type(features))
+    print(len(features))
+    return jsonify(features)
 
 
 # def store_twitter_user_data(screen_name):
