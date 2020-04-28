@@ -4,6 +4,7 @@ import pandas as pd
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -40,6 +41,7 @@ cur = conn.cursor()
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     db = SQLAlchemy(app)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://phmcuozt:Hl4xzpVOZxiQ9af4kH5bavoEHIx7z3hn@drona.db.elephantsql.com:5432/phmcuozt'
 
@@ -112,8 +114,6 @@ def create_app():
                 'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
             }
         ]
-        return jsonify(dummy_data)
-
+        return jsonify(dummy_data)     
+        
     return app
-
-
