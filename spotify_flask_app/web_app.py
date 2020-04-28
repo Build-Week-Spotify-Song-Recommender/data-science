@@ -56,7 +56,7 @@ def create_app():
         '''
         cur.execute(query_1)
         results = cur.fetchall()
-        return jsonify(dict((results))
+        return jsonify(dict(results))
 
     @app.route("/<user>/<playlist_id>")
     def playlist_audio_features(user=None, playlist_id=None):
@@ -70,7 +70,7 @@ def create_app():
         features = sp.audio_features(ids)
         print(type(features))
         print(len(features))
-        return jsonify(dict((features))
+        return jsonify(dict(features))
 
     @app.route("/dummy_data")
     def dummy_data():
