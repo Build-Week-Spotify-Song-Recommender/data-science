@@ -65,12 +65,54 @@ def playlist_audio_features(user=None, playlist_id=None):
     
     ids = [] 
     for i in range(len(songs)): 
-        ids.append(songs[i]["track"]["id"]) 
+        ids.append(songs[i]["track"]["id"])
     
     features = sp.audio_features(ids)
     print(type(features))
     print(len(features))
     return jsonify(features)
+
+@app.route("/dummy_data")
+def dummy_data():
+    dummy_data = [
+        {
+            'song': 'My Boo',
+            'artist': "Usher",
+            'album': 'Confessions (Expanded Edition)',
+            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273365b3fb800c19f7ff72602da'
+        },
+        {
+            'song': 'Sorry',
+            'artist': "Justin Bieber",
+            'album': 'Purpose (Deluxe)',
+            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273f46b9d202509a8f7384b90de'
+        },
+        {
+            'song': 'See Through',
+            'artist': "The Band CAMINO",
+            'album': 'tryhard',
+            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273f232b955ad8637ecd04bfdf7'
+        },
+        {
+            'song': 'Heaven',
+            'artist': "Avicii",
+            'album': 'TIM',
+            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273660ee24281a547103f466ff5'
+        },
+        {
+            'song': 'Here And Now',
+            'artist': "Kenny Chesney",
+            'album': 'Here And Now',
+            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273c559a84d5a37627db8c76a8a'
+        },
+        {
+            'song': 'Halo',
+            'artist': "Beyonce",
+            'album': 'I AM...SASHA FIERCE',
+            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
+        }
+    ]
+    return jsonify(dummy_data)
 
 
 # def store_twitter_user_data(screen_name):
