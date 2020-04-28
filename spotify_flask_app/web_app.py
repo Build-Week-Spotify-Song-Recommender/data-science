@@ -27,9 +27,7 @@ SPOTIFY_DB_PW = os.getenv("SPOTIFY_DB_PW")
 SPOTIFY_DB_HOST = os.getenv("SPOTIFY_DB_HOST")
 SPOTIFY_DB_USER = os.getenv("SPOTIFY_DB_USER")
 
-conn = psycopg2.connect(dbname=SPOTIFY_DB_NAME, user=SPOTIFY_DB_USER,
-                        password=SPOTIFY_DB_PW, host=SPOTIFY_DB_HOST)
-cur = conn.cursor()
+
 
 # pip install Flask-Migrate
 # pip install Flask-SQLAlchemy
@@ -51,6 +49,9 @@ def create_app():
 
     @app.route("/data")
     def april_spotify_data():
+        conn = psycopg2.connect(dbname=SPOTIFY_DB_NAME, user=SPOTIFY_DB_USER,
+                        password=SPOTIFY_DB_PW, host=SPOTIFY_DB_HOST)
+        cur = conn.cursor()
         query_1 = '''
         SELECT *
         FROM spotify_table
