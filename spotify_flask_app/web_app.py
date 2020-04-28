@@ -38,99 +38,83 @@ cur = conn.cursor()
 # ​
 # ​
 
+def create_app():
+    app = Flask(__name__)
+    db = SQLAlchemy(app)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://phmcuozt:Gq5822Z4v3ypBvLtnCsF4XjabVM3LKr9@drona.db.elephantsql.com:5432/phmcuozt'
 
-app = Flask(__name__)
-db = SQLAlchemy(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://phmcuozt:Gq5822Z4v3ypBvLtnCsF4XjabVM3LKr9@drona.db.elephantsql.com:5432/phmcuozt'
+    @app.route("/")
+    def index():
+        return "Home Page"
 
-@app.route("/")
-def index():
-    return "Home Page"
+    @app.route("/data")
+    def april_spotify_data():
+        query_1 = '''
+        SELECT *
+        FROM april_spotify
+        LIMIT 1000
+        '''
+        cur.execute(query_1)
+        results = cur.fetchall()
+        return jsonify(results)
 
-@app.route("/data")
-def april_spotify_data():
-    query_1 = '''
-    SELECT *
-    FROM april_spotify
-    LIMIT 1000
-    '''
-    cur.execute(query_1)
-    results = cur.fetchall()
-    return jsonify(results)
+    @app.route("/<user>/<playlist_id>")
+    def playlist_audio_features(user=None, playlist_id=None):
+        playlist = sp.user_playlist(user=user, playlist_id=playlist_id)
+        songs = playlist["tracks"]["items"] 
+        
+        ids = [] 
+        for i in range(len(songs)): 
+            ids.append(songs[i]["track"]["id"])
+        
+        features = sp.audio_features(ids)
+        print(type(features))
+        print(len(features))
+        return jsonify(features)
 
-@app.route("/<user>/<playlist_id>")
-def playlist_audio_features(user=None, playlist_id=None):
-    playlist = sp.user_playlist(user=user, playlist_id=playlist_id)
-    songs = playlist["tracks"]["items"] 
-    
-    ids = [] 
-    for i in range(len(songs)): 
-        ids.append(songs[i]["track"]["id"])
-    
-    features = sp.audio_features(ids)
-    print(type(features))
-    print(len(features))
-    return jsonify(features)
-
-@app.route("/dummy_data")
-def dummy_data():
-    dummy_data = [
-        {
-            'song': 'My Boo',
-            'artist': "Usher",
-            'album': 'Confessions (Expanded Edition)',
-            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273365b3fb800c19f7ff72602da'
-        },
-        {
-            'song': 'Sorry',
-            'artist': "Justin Bieber",
-            'album': 'Purpose (Deluxe)',
-            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273f46b9d202509a8f7384b90de'
-        },
-        {
-            'song': 'See Through',
-            'artist': "The Band CAMINO",
-            'album': 'tryhard',
-            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273f232b955ad8637ecd04bfdf7'
-        },
-        {
-            'song': 'Heaven',
-            'artist': "Avicii",
-            'album': 'TIM',
-            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273660ee24281a547103f466ff5'
-        },
-        {
-            'song': 'Here And Now',
-            'artist': "Kenny Chesney",
-            'album': 'Here And Now',
-            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273c559a84d5a37627db8c76a8a'
-        },
-        {
-            'song': 'Halo',
-            'artist': "Beyonce",
-            'album': 'I AM...SASHA FIERCE',
-            'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
-        }
-    ]
-    return jsonify(dummy_data)
+    @app.route("/dummy_data")
+    def dummy_data():
+        dummy_data = [
+            {
+                'song': 'My Boo',
+                'artist': "Usher",
+                'album': 'Confessions (Expanded Edition)',
+                'cover_art': 'https://i.scdn.co/image/ab67616d0000b273365b3fb800c19f7ff72602da'
+            },
+            {
+                'song': 'Sorry',
+                'artist': "Justin Bieber",
+                'album': 'Purpose (Deluxe)',
+                'cover_art': 'https://i.scdn.co/image/ab67616d0000b273f46b9d202509a8f7384b90de'
+            },
+            {
+                'song': 'See Through',
+                'artist': "The Band CAMINO",
+                'album': 'tryhard',
+                'cover_art': 'https://i.scdn.co/image/ab67616d0000b273f232b955ad8637ecd04bfdf7'
+            },
+            {
+                'song': 'Heaven',
+                'artist': "Avicii",
+                'album': 'TIM',
+                'cover_art': 'https://i.scdn.co/image/ab67616d0000b273660ee24281a547103f466ff5'
+            },
+            {
+                'song': 'Here And Now',
+                'artist': "Kenny Chesney",
+                'album': 'Here And Now',
+                'cover_art': 'https://i.scdn.co/image/ab67616d0000b273c559a84d5a37627db8c76a8a'
+            },
+            {
+                'song': 'Halo',
+                'artist': "Beyonce",
+                'album': 'I AM...SASHA FIERCE',
+                'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
+            }
+        ]
+        return jsonify(dummy_data)
 
 
-# def store_twitter_user_data(screen_name):
-#     api = api_client()
-#     twitter_user = api.get_user(screen_name)
-#     #statuses = api.user_timeline(screen_name, tweet_mode="extended", count=150, exclude_replies=True, include_rts=False)
-#     statuses = api.user_timeline(screen_name, tweet_mode="extended", count=150)
-#     #return jsonify({"user": user._json, "tweets": [s._json for s in statuses]})
-
-#     db_user = User.query.get(twitter_user.id) or User(id=twitter_user.id)
-#     db_user.screen_name = twitter_user.screen_name
-#     db_user.name = twitter_user.name
-#     db_user.location = twitter_user.location
-#     db_user.followers_count = twitter_user.followers_count
-#     db.session.add(db_user)
-#     db.session.commit()
-#     #return "OK"
-#     #breakpoint()
 
 if __name__ == "__main__":
     app.run(debug=True)

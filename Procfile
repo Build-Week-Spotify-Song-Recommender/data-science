@@ -1,1 +1,1 @@
-web: gunicorn "web_app: python spotify_flask_app\web_app.py"
+web: gunicorn spotify_flask_app:APP -t 120
