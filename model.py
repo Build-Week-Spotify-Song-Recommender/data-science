@@ -1,3 +1,7 @@
+import numpy as np
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential
+
 def normalize(vectors):
     return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
 
@@ -42,6 +46,6 @@ def get_results(input_vector, features, best_match=True, amount=6):
     prediction = prediction.reshape(prediction.shape[1])
     if best_match:
         if tr_id in ids[prediction[-amount:]]:
-            return ids[prediction[-amount-1:-1]]
-        return ids[prediction[-amount:]]
-    return ids[prediction[:amount]]
+            return features[prediction[-amount-1:-1]]
+        return features[prediction[-amount:]]
+    return features[prediction[:amount]]
