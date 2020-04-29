@@ -1,7 +1,7 @@
 import os
 import psycopg2
 import pandas as pd
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -116,6 +116,24 @@ def create_app():
                 'cover_art': 'https://i.scdn.co/image/ab67616d0000b273e13de7b8662b085b0885ffef'
             }
         ]
-        return jsonify(dummy_data)     
+        return jsonify(dummy_data)
+
+    @app.route("/search_something/<artist_name>/<track_name>")
+    def get_stuff(artist_name, track_name):
+        result = sp.search(q=f'artist:{artist_name} track:{track_name}')
+        track_id = result['tracks']['items'][0]['id']
+        track_name = result['tracks']['items'][0]['name']
+        artist_name = result['tracks']['items'][0]['artists'][0]['name']
+        album_name = result['tracks']['items'][0]['album']['name']
+        album_id = result['tracks']['items'][0]['album']['id']
+        album_cover_link = result['tracks']['items'][0]['album']['images'][0]['url']
+        song_sample = result['tracks']['items'][0]['preview_url']
+        audio_features = sp.audio_features(track_id)
+        audio_features = audio_features[0]
+        keys_to_remove = ["uri", "analysis_url", "id", "type", "track_href"]
+        for key in keys_to_remove:
+          del audio_features[key]
+        audio_features_json = jsonify(audio_features)
+        return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
 
     return app
