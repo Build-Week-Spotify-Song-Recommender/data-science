@@ -133,7 +133,7 @@ def create_app():
         song_sample = result['tracks']['items'][0]['preview_url']
         audio_features = sp.audio_features(track_id)
         audio_features = audio_features[0]
-        keys_to_remove = ["uri", "analysis_url", "type", "track_href"]
+        keys_to_remove = ["uri", "analysis_url", "type", "track_href", "time_signature"]
         for key in keys_to_remove:
           del audio_features[key]
         audio_features_df = pd.DataFrame(audio_features, index=[0])
@@ -146,7 +146,7 @@ def create_app():
         SELECT *
         FROM spotify_table
         '''
-        model_results = get_results(audio_features_df, pd.read_sql_query(model_query, conn).drop(['track_name', 'artist_name'], axis=1))
+        model_results = get_results(audio_features_df, pd.read_sql_query(model_query, conn).drop(['track_name', 'artist_name', 'time_signature'], axis=1))
         conn.close()
         model_track_ids = model_results.id
         model_result_query = sp.tracks(model_track_ids)
