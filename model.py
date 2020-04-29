@@ -31,7 +31,7 @@ def get_results(input_vector, features, best_match=True, amount=6):
 
     returns a list (might be a numpy array?) of indices from the original database
     """
-    id = input_vector['id']
+    tr_id = input_vector['id'].values[0]
     ids = features['id']
     input_vec = input_vector.drop('id', axis=1)
     feats = features.drop('id', axis=1)
@@ -41,7 +41,7 @@ def get_results(input_vector, features, best_match=True, amount=6):
     prediction = np.array(predict(model, norm_vector).argsort())
     prediction = prediction.reshape(prediction.shape[1])
     if best_match:
-        if id in ids[prediction[-amount:]]:
+        if tr_id in ids[prediction[-amount:]]:
             return ids[prediction[-amount-1:-1]]
         return ids[prediction[-amount:]]
     return ids[prediction[:amount]]
