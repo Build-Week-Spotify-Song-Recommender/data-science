@@ -1,6 +1,6 @@
 import numpy as np
-from keras.layers import Dense
-from keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential
 
 
 def normalize(vectors):
