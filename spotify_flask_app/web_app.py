@@ -149,6 +149,7 @@ def april_spotify_data():
         keys_to_remove = ["uri", "analysis_url", "id", "type", "track_href"]
         for key in keys_to_remove:
           del audio_features[key]
+        audio_features = jsonify(audio_features)
         return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features)  
 
     @app.route('/run_model/<searched_id>', methods=['GET','POST'])
