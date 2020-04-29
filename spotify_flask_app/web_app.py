@@ -150,7 +150,16 @@ def create_app():
         conn.close()
         model_track_ids = model_results.id
         model_result_query = sp.tracks(model_track_ids)
-        return model_result_query
+        results_dict_list = {}
+        for i in range(6):
+            results_dict = {k:np.nan for k in ['artist', 'track_name', 'track_id', 'album_cover']}
+            results_dict['artist'] = model_result_query['tracks'][i]['artists'][0]['name']
+            results_dict['track_name'] = model_result_query['tracks'][i]['name']
+            results_dict['track_id'] = model_result_query['tracks'][i]['id']
+            results_dict['album_cover'] = model_result_query['tracks'][i]['album']['images'][0]['url']
+            results_dict_list[i] = results_dict
+        return jsonify(results_dict_list)
+       
      
 
         # return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
