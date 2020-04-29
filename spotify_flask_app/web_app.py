@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-
+# from spotify_flask_app.model import KNN_Model
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -123,6 +123,7 @@ def create_app():
         result = sp.search(q=f'artist:{artist_name} track:{track_name}')
         track_id = result['tracks']['items'][0]['id']
         track_name = result['tracks']['items'][0]['name']
+        track_name_json = jsonify(track_name)
         artist_name = result['tracks']['items'][0]['artists'][0]['name']
         album_name = result['tracks']['items'][0]['album']['name']
         album_id = result['tracks']['items'][0]['album']['id']
@@ -130,10 +131,14 @@ def create_app():
         song_sample = result['tracks']['items'][0]['preview_url']
         audio_features = sp.audio_features(track_id)
         audio_features = audio_features[0]
-        keys_to_remove = ["uri", "analysis_url", "id", "type", "track_href"]
+        keys_to_remove = ["uri", "analysis_url", "type", "track_href"]
         for key in keys_to_remove:
           del audio_features[key]
+        audio_features_df = pd.DataFrame(audio_features)
         audio_features_json = jsonify(audio_features)
+        breakpoint()
+        #MODEL RETURNS 6 RECOMMENDS
         return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
+        return jsonify(track_id, track)
 
     return app
