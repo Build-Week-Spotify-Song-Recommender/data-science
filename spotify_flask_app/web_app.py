@@ -5,6 +5,8 @@ from flask import Flask, jsonify, render_template
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from model import get_results
+import numpy as np
 # from spotify_flask_app.model import KNN_Model
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -134,11 +136,24 @@ def create_app():
         keys_to_remove = ["uri", "analysis_url", "type", "track_href"]
         for key in keys_to_remove:
           del audio_features[key]
-        audio_features_df = pd.DataFrame(audio_features)
+        audio_features_df = pd.DataFrame(audio_features, index=[0])
         audio_features_json = jsonify(audio_features)
-        breakpoint()
         #MODEL RETURNS 6 RECOMMENDS
-        return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
-        return jsonify(track_id, track)
+        conn = psycopg2.connect(dbname=SPOTIFY_DB_NAME, user=SPOTIFY_DB_USER,
+                        password=SPOTIFY_DB_PW, host=SPOTIFY_DB_HOST)
+        # model_results = "HI"
+        model_query = '''
+        SELECT *
+        FROM spotify_table
+        '''
+        model_results = get_results(audio_features_df, pd.read_sql_query(model_query, conn).drop(['track_name', 'artist_name'], axis=1))
+        conn.close()
+        model_track_ids = model_results.id
+        model_result_query = sp.tracks(model_track_ids)
+        return model_result_query
+     
+
+        # return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
+        # return jsonify(track_id, track)
 
     return app
