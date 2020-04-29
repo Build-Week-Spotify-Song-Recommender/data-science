@@ -46,6 +46,6 @@ def get_results(input_vector, features, best_match=True, amount=6):
     prediction = prediction.reshape(prediction.shape[1])
     if best_match:
         if tr_id in ids[prediction[-amount:]]:
-            return features[prediction[-amount-1:-1]]
-        return features[prediction[-amount:]]
-    return features[prediction[:amount]]
+            return features.loc[prediction[-amount-1:-1]]
+        return features.loc[prediction[-amount:]]
+    return features.loc[prediction[:amount]]
