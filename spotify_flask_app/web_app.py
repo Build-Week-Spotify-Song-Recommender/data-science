@@ -10,6 +10,13 @@ import numpy as np
 # from spotify_flask_app.model import KNN_Model
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+import matplotlib
+import matplotlib.pyplot as plt
+import chart_studio
+import chart_studio.plotly as py
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
 
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -17,6 +24,7 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID,
                                                      client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+chart_studio.tools.set_credentials_file(username='CodingDuckmx', api_key='BJDTaHirN1qxM6uaTXhS')
 
 # from flask_migrate import Migrate
 # from psycopg2.extras import execute_values
@@ -126,6 +134,7 @@ def create_app():
         track_id = result['tracks']['items'][0]['id']
         track_name = result['tracks']['items'][0]['name']
         track_name_json = jsonify(track_name)
+        track_popularity = result['tracks']['items'][0]['popularity']
         artist_name = result['tracks']['items'][0]['artists'][0]['name']
         album_name = result['tracks']['items'][0]['album']['name']
         album_id = result['tracks']['items'][0]['album']['id']
@@ -137,6 +146,7 @@ def create_app():
         for key in keys_to_remove:
           del audio_features[key]
         audio_features_df = pd.DataFrame(audio_features, index=[0])
+
         audio_features_json = jsonify(audio_features)
         #MODEL RETURNS 6 RECOMMENDS
         conn = psycopg2.connect(dbname=SPOTIFY_DB_NAME, user=SPOTIFY_DB_USER,
@@ -158,10 +168,71 @@ def create_app():
             results_dict['track_id'] = model_result_query['tracks'][i]['id']
             results_dict['album_cover'] = model_result_query['tracks'][i]['album']['images'][0]['url']
             results_dict_list[i] = results_dict
-        return jsonify(results_dict_list)
-       
-     
 
+        print(model_results) 
+       
+        audio_features_df['popularity'] = track_popularity
+        results_to_plot = model_results[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]]
+        results_to_plot = audio_features_df[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]].append(results_to_plot)
+        results_to_plot = results_to_plot.reset_index(drop=True)
+
+        print(results_to_plot)
+
+        figs = go.Figure()
+
+        figs = make_subplots(rows=4, cols=3, shared_yaxes=True)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['danceability'], name='Danceability'),
+                    row=1, col=1)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['energy'], name='Energy'),
+                    row=1, col=2)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['liveness'], name='Liveness'),
+                    row=1, col=3)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['speechiness'], name='Speechiness'),
+                    row=2, col=1)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['acousticness'], name='Acousticness'),
+                    row=2, col=2)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['instrumentalness'], name='Instrumentalness'),
+                    row=2, col=3)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['loudness'], name='Loudness'),
+                    row=3, col=1)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['popularity'], name='Popularity'),
+                    row=3, col=2)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['tempo'], name='Tempo'),
+                    row=3, col=3)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['key'], name='Key'),
+                    row=4, col=1)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['mode'], name='Mode'),
+                    row=4, col=2)
+
+        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['valence'], name='Valence'),
+                    row=4, col=3)
+
+
+        figs.update_layout(height=800, width=800,
+                        title_text="Difference of features between recomendations.")
+
+        figs.update_xaxes(title_text="Songs")
+
+        py.plot(figs, filename='subplots', sharing='public')
+
+        # plt.savefig(img, format='png')
+        # img.seek(0)
+
+        # plot_url = base64.b64encode(img.getvalue()).decode()
+
+
+        return jsonify(results_dict_list)
         # return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
         # return jsonify(track_id, track)
 
