@@ -24,7 +24,7 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID,
                                                      client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-chart_studio.tools.set_credentials_file(username='CodingDuckmx', api_key='BJDTaHirN1qxM6uaTXhS')
+chart_studio.tools.set_credentials_file(username='CHART_STUDIO_USERNAME', api_key='CHART_STUDIO_API_KEY')
 
 # from flask_migrate import Migrate
 # from psycopg2.extras import execute_values
