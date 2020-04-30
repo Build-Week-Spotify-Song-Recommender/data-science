@@ -168,15 +168,11 @@ def create_app():
             results_dict['track_id'] = model_result_query['tracks'][i]['id']
             results_dict['album_cover'] = model_result_query['tracks'][i]['album']['images'][0]['url']
             results_dict_list[i] = results_dict
-
-        print(model_results) 
-       
+     
         audio_features_df['popularity'] = track_popularity
         results_to_plot = model_results[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]]
         results_to_plot = audio_features_df[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]].append(results_to_plot)
         results_to_plot = results_to_plot.reset_index(drop=True)
-
-        print(results_to_plot)
 
         figs = go.Figure()
 
