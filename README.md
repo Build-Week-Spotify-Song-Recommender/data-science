@@ -33,6 +33,3 @@ Project description goes here
 2. ### Machine Learning Engineers
 
     + describe the work of the ML engineers here
-
-    
-https://avatars1.githubusercontent.com/u/60849521?s=460&u=1c0422c701fc566ecd9edcea912801a88f1ce720&v=4
