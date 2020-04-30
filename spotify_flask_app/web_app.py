@@ -16,7 +16,7 @@ import chart_studio
 import chart_studio.plotly as py
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-
+from sklearn.neighbors import NearestNeighbors
 
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -133,7 +133,7 @@ def create_app():
         result = sp.search(q=f'artist:{artist_name} track:{track_name}')
         track_id = result['tracks']['items'][0]['id']
         track_name = result['tracks']['items'][0]['name']
-        track_name_json = jsonify(track_name)
+        # track_name_json = jsonify(track_name)
         track_popularity = result['tracks']['items'][0]['popularity']
         artist_name = result['tracks']['items'][0]['artists'][0]['name']
         album_name = result['tracks']['items'][0]['album']['name']
@@ -142,37 +142,40 @@ def create_app():
         song_sample = result['tracks']['items'][0]['preview_url']
         audio_features = sp.audio_features(track_id)
         audio_features = audio_features[0]
-        keys_to_remove = ["uri", "analysis_url", "type", "track_href", "time_signature"]
+        keys_to_remove = ["uri", "analysis_url", "type", "track_href", "duration_ms", 'time_signature']
         for key in keys_to_remove:
-          del audio_features[key]
+            del audio_features[key]
         audio_features_df = pd.DataFrame(audio_features, index=[0])
 
-        audio_features_json = jsonify(audio_features)
+        # audio_features_json = jsonify(audio_features)
         #MODEL RETURNS 6 RECOMMENDS
         conn = psycopg2.connect(dbname=SPOTIFY_DB_NAME, user=SPOTIFY_DB_USER,
                         password=SPOTIFY_DB_PW, host=SPOTIFY_DB_HOST)
         # model_results = "HI"
-        model_query = '''
-        SELECT *
-        FROM spotify_table
+
+        inp = audio_features_df
+        inp.key = inp.key * 2 + inp['mode']
+        track_id = inp['id'][0]
+        inp = inp.drop(['mode', 'id'], axis=1)
+        
+        path_to_model = '../knn.pkl'
+        
+        results = np.flip(joblib.load(path_to_model).kneighbors(inp, return_distance=False)[0]).tolist()
+        query = f'''
+        SELECT * FROM spotify_table
+        WHERE index IN {tuple(results)} AND track_id <> '{track_id}'
+        LIMIT 6;
         '''
-        model_results = get_results(audio_features_df, pd.read_sql_query(model_query, conn).drop(['track_name', 'artist_name', 'time_signature'], axis=1))
-        conn.close()
-        model_track_ids = model_results.id
-        model_result_query = sp.tracks(model_track_ids)
-        results_dict_list = {}
-        for i in range(6):
-            results_dict = {k:np.nan for k in ['artist', 'track_name', 'track_id', 'album_cover']}
-            results_dict['artist'] = model_result_query['tracks'][i]['artists'][0]['name']
-            results_dict['track_name'] = model_result_query['tracks'][i]['name']
-            results_dict['track_id'] = model_result_query['tracks'][i]['id']
-            results_dict['album_cover'] = model_result_query['tracks'][i]['album']['images'][0]['url']
-            results_dict_list[i] = results_dict
-     
+        output = pd.read_sql_query(query, conn)
+
+        # print(output) 
+    
         audio_features_df['popularity'] = track_popularity
-        results_to_plot = model_results[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]]
+        results_to_plot = output[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]]
         results_to_plot = audio_features_df[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]].append(results_to_plot)
         results_to_plot = results_to_plot.reset_index(drop=True)
+
+        # print(results_to_plot)
 
         figs = go.Figure()
 
@@ -229,7 +232,6 @@ def create_app():
 
 
         return jsonify(results_dict_list)
-        # return render_template("button.html", result=result, track_id=track_id, track_name=track_name, artist_name=artist_name, album_name=album_name, album_id=album_id, album_cover_link=album_cover_link, song_sample=song_sample, audio_features=audio_features) 
-        # return jsonify(track_id, track)
+
 
     return app
