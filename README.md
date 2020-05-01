@@ -22,7 +22,7 @@ Github Links:
 
 ## **Description**
 
-Project description goes here
+Project description goes here. But here is our [endpoint](https://spotify-song-suggester-4.herokuapp.com/search_something/justin%20bieber/sorry)
 
 ## **DS Roles**
 
