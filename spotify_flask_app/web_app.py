@@ -75,12 +75,12 @@ def create_app():
     @app.route("/<user>/<playlist_id>")
     def playlist_audio_features(user=None, playlist_id=None):
         playlist = sp.user_playlist(user=user, playlist_id=playlist_id)
-        songs = playlist["tracks"]["items"] 
-        
-        ids = [] 
-        for i in range(len(songs)): 
+        songs = playlist["tracks"]["items"]
+
+        ids = []
+        for i in range(len(songs)):
             ids.append(songs[i]["track"]["id"])
-        
+
         features = sp.audio_features(ids)
         print(type(features))
         print(len(features))
@@ -163,9 +163,9 @@ def create_app():
         inp.key = inp.key * 2 + inp['mode']
         track_id = inp['id'][0]
         inp = inp.drop(['mode', 'id'], axis=1)
-        
+
         path_to_model = './knn.pkl'
-        
+
         results = np.flip(joblib.load(path_to_model).kneighbors(inp, return_distance=False)[0]).tolist()
         query = f'''
         SELECT * FROM spotify_table
@@ -183,26 +183,26 @@ def create_app():
         dict_input['album_cover'] = album_cover_link
         dict_input['album_name'] = album_name
 
-        
 
 
-        results_dict_list = {}
-        results_dict_list['user_input'] = dict_input
+
+        results_list = []
+        results_list.append(dict_input)
         for i in range(6):
-            results_dict = {k:np.nan for k in ['artist', 'track_name', 'track_id','album_name', 'album_cover']}
+            results_dict= {k:np.nan for k in ['artist', 'track_name', 'track_id','album_name', 'album_cover']}
             results_dict['artist'] = model_result_query['tracks'][i]['artists'][0]['name']
             results_dict['track_name'] = model_result_query['tracks'][i]['name']
             results_dict['track_id'] = model_result_query['tracks'][i]['id']
             results_dict['album_cover'] = model_result_query['tracks'][i]['album']['images'][0]['url']
             results_dict['album_name'] = model_result_query['tracks'][i]['album']['name']
-            results_dict_list[str(i)] = results_dict
-        
+            results_list.append(results_dict)
 
 
 
-        # print(output) 
+
+        # print(output)
         # print(results_dict_list)
-    
+
         audio_features_df['popularity'] = track_popularity
         results_to_plot = output[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]]
         results_to_plot = audio_features_df[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]].append(results_to_plot)
@@ -264,7 +264,7 @@ def create_app():
         # plot_url = base64.b64encode(img.getvalue()).decode()
 
 
-        return jsonify(results_dict_list)
+        return jsonify(results_list)
 
 
     return app
