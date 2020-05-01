@@ -51,7 +51,7 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
     db = SQLAlchemy(app)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://phmcuozt:Hl4xzpVOZxiQ9af4kH5bavoEHIx7z3hn@drona.db.elephantsql.com:5432/phmcuozt'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgres://{SPOTIFY_DB_NAME}:{SPOTIFY_DB_PW}@{SPOTIFY_DB_HOST}:5432/{SPOTIFY_DB_USER}'
 
     @app.route("/")
     def index():
