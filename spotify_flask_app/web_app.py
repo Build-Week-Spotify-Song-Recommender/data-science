@@ -21,14 +21,10 @@ import joblib
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-CHART_USERNAME = os.getenv("CHART_USERNAME")
-CHART_APIKEY = os.getenv("CHART_APIKEY")
-
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID,
                                                      client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-chart_studio.tools.set_credentials_file(username=CHART_USERNAME, api_key=CHART_APIKEY)
-
+chart_studio.tools.set_credentials_file(username=os.getenv("CHART_USERNAME"), api_key=os.getenv("CHART_APIKEY"))
 
 # from flask_migrate import Migrate
 # from psycopg2.extras import execute_values
@@ -132,10 +128,10 @@ def create_app():
         ]
         return jsonify(dummy_data)
 
-    @app.route("/search_something/<artist_name>/<track_name>")
+    @app.route("/search_something/<artist_name>/<track_name>", methods=['GET','POST'])
     def get_stuff(artist_name, track_name):
+            
         result = sp.search(q=f'artist:{artist_name} track:{track_name}')
-
         track_id = result['tracks']['items'][0]['id']
         track_name = result['tracks']['items'][0]['name']
         # track_name_json = jsonify(track_name)
@@ -182,6 +178,8 @@ def create_app():
         dict_input['album_cover'] = album_cover_link
         dict_input['album_name'] = album_name
 
+        conn.close()
+
         results_dict_list = {}
         results_dict_list['user_input'] = dict_input
         for i in range(6):
@@ -193,61 +191,64 @@ def create_app():
             results_dict['album_name'] = model_result_query['tracks'][i]['album']['name']
             results_dict_list[str(i)] = results_dict
         
+
+
+
+        # print(output) 
+        # print(results_dict_list)
     
         audio_features_df['popularity'] = track_popularity
         results_to_plot = output[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]]
         results_to_plot = audio_features_df[['popularity','danceability','energy','key','loudness','mode','speechiness','acousticness','instrumentalness','liveness','valence','tempo', ]].append(results_to_plot)
         results_to_plot = results_to_plot.reset_index(drop=True)
 
-        # print(results_to_plot)
+        # figs = go.Figure()
 
-        figs = go.Figure()
+        # figs = make_subplots(rows=4, cols=3, shared_yaxes=True)
 
-        figs = make_subplots(rows=4, cols=3, shared_yaxes=True)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['danceability'], name='Danceability'),
+        #             row=1, col=1)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['danceability'], name='Danceability'),
-                    row=1, col=1)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['energy'], name='Energy'),
+        #             row=1, col=2)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['energy'], name='Energy'),
-                    row=1, col=2)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['liveness'], name='Liveness'),
+        #             row=1, col=3)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['liveness'], name='Liveness'),
-                    row=1, col=3)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['speechiness'], name='Speechiness'),
+        #             row=2, col=1)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['speechiness'], name='Speechiness'),
-                    row=2, col=1)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['acousticness'], name='Acousticness'),
+        #             row=2, col=2)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['acousticness'], name='Acousticness'),
-                    row=2, col=2)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['instrumentalness'], name='Instrumentalness'),
+        #             row=2, col=3)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['instrumentalness'], name='Instrumentalness'),
-                    row=2, col=3)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['loudness'], name='Loudness'),
+        #             row=3, col=1)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['loudness'], name='Loudness'),
-                    row=3, col=1)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['popularity'], name='Popularity'),
+        #             row=3, col=2)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['popularity'], name='Popularity'),
-                    row=3, col=2)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['tempo'], name='Tempo'),
+        #             row=3, col=3)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['tempo'], name='Tempo'),
-                    row=3, col=3)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['key'], name='Key'),
+        #             row=4, col=1)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['key'], name='Key'),
-                    row=4, col=1)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['mode'], name='Mode'),
+        #             row=4, col=2)
 
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['mode'], name='Mode'),
-                    row=4, col=2)
-
-        figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['valence'], name='Valence'),
-                    row=4, col=3)
+        # figs.add_trace(go.Scatter(x=results_to_plot.index, y=results_to_plot['valence'], name='Valence'),
+        #             row=4, col=3)
 
 
-        figs.update_layout(height=800, width=800,
-                        title_text="Difference of features between recomendations.")
+        # figs.update_layout(height=800, width=800,
+        #                 title_text="Difference of features between recomendations.")
 
-        figs.update_xaxes(title_text="Songs")
+        # figs.update_xaxes(title_text="Songs")
 
-        py.plot(figs, filename='subplots', sharing='public')
+        # py.plot(figs, filename='subplots', sharing='public')
 
         # plt.savefig(img, format='png')
         # img.seek(0)
@@ -256,5 +257,6 @@ def create_app():
 
 
         return jsonify(results_dict_list)
+
 
     return app
